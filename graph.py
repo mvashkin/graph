@@ -1,69 +1,68 @@
-import pygame
+# f(x) = -12x^4*sin(cos(x))-18x^3+5x^2+10x-30
+# Определить корни
+# Найти интервалы, на которых функция возрастает
+# Найти интервалы, на которых функция убывает
+# Построить график
+# Вычислить вершину
+# Определить промежутки, на котором f > 0
+# Определить промежутки, на котором f < 0
 
-pygame.init()
-screen = pygame.display.set_mode((500,500))
-pygame.display.set_caption("func_graph")
-all_sprites=pygame.sprite.Group()
-clock = pygame.time.Clock()
-running = True
-fps=60
-
-class Line(pygame.sprite.Sprite):
-    def __init__(self,pos,x,y):
-        pygame.sprite.Sprite.__init__(self)
-        if pos=="x":
-            self.image=pygame.Surface((3,400))
-            self.image.fill((0,0,0))
-            self.rect = self.image.get_rect()
-            self.rect.centerx = x
-            self.rect.centery = y
-        elif pos=="y":
-            self.image=pygame.Surface((400,3))
-            self.image.fill((0,0,0))
-            self.rect = self.image.get_rect()
-            self.rect.centerx = x
-            self.rect.centery = y
-            
-class Dot(pygame.sprite.Sprite):
-    def __init__(self,x,y):
-        pygame.sprite.Sprite.__init__(self)
-        self.image=pygame.surface.Surface((5,5))
-        self.image.fill((0,0,0))
-        self.rect=self.image.get_rect()
-        self.rect.centerx=x
-        self.rect.centery=y
-            
-def Calc(func):
-    i=-10
-    while i<=10:
-        mass=""
-        for j in func:
-            if j == "x":
-                mass+=str(i)
+import numpy as np
+from sympy import *
+from scipy.optimize import fsolve
+from sympy.plotting import plot
+init_printing()
+interval = np.arange(-30,30) 
+x = Symbol('x')
+function_x = sympify('-12*x^4*sin(cos(x)) - 18*x^3 + 5*x^2 + 10*x - 30')
+left_point = float(input('Задайте начало отрезка: '))
+right_point = float(input('Задайте конец отрезка: '))
+def f(x):
+    return - 12 * x ** 4 * np.sin(np.cos(x)) - 18 * x ** 3 + 5 * x ** 2 + 10 * x - 30
+number = left_point
+roots = []
+growth_interval = []
+while number < right_point:
+    if f(number) >= 0 and f(number + 1) <= 0:
+        w = fsolve(f, number)
+        roots.append(*w)
+    if f(number) <= 0 and f(number + 1) >= 0:
+        w = fsolve(f, number)
+        roots.append(*w)
+    if f(number) > f(number + 1) < f(number + 2):
+        growth_interval.append(number + 1)
+    number += 1
+print(f'Roots: {roots}')
+def search_top(left, right):
+    array = []
+    temp = left
+    sum_y = 0
+    while left < right:
+        array.append([f(left), left])
+        left += 0.1
+        sum_y += f(left)
+    if sum_y > 0:
+        sum_y = 0
+        print(f'f > 0 {temp, right}')
+        return max(array)
+    else:
+        sum_y = 0
+        print(f'f < 0 {temp, right}')
+        return min(array)
+if len(roots) < 2:
+    print('Нет вершин')
+else:
+    top = []
+    for i in range(len(roots) - 1):
+        top.append(search_top(roots[i], roots[i + 1]))
+    [print(f'Координаты вершин: ({item[1]}, {item[0]})') for item in top]
+    if len(top) < 2:
+        print('не достаточно данных')
+    else:
+        for i in range(len(top) - 1):
+            if top[i][0] > top[i + 1][0]:
+                print(f'Убывает при x {top[i][1], top[i + 1][1]}')
             else:
-                mass+=j
-            i+=0.0001
-        try:
-          res1=eval(mass)
-        except:
-          res1=10000
-        dot=Dot(250+i*10,250-res1*10)
-        all_sprites.add(dot)
-
-func = str(input("y = "))
-calc = Calc(func)
-
-line = Line("y",250,250)
-all_sprites.add(line)
-line1 = Line("x",250,250)
-all_sprites.add(line1)
-
-while running:
-    clock.tick(fps)
-    for event in pygame.event.get():
-        if event.type == pygame.QUIT:
-            running = False
-    screen.fill((255,255,255))
-    all_sprites.draw(screen)
-    pygame.display.flip()
-pygame.quit()
+                print(f'Возрастает при x {top[i][1], top[i + 1][1]}')
+plot(function_x)
+  
